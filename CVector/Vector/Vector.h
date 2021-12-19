@@ -3,26 +3,44 @@
 
 #include <iostream>
 
-namespace dstd {
+namespace my {
 
 template <class Type>
 class CVector {
 private:
-    Type *arr;
-    size_t size;
+    Type *m_array;
+    size_t m_size;
+    size_t m_allocated;
 public:
-    CVector();
+    typedef Type value_type;
+    typedef value_type& reference;
+    typedef const value_type& const_reference;
+    typedef size_t size_type;
+    CVector(size_t s = 0);
     ~CVector();
+    size_t size();
 };
 
 template <class Type>
-CVector<Type>::CVector() {
-    std::cout << "Contructor without arguments" << std::endl;
+size_t CVector<Type>::size() {
+    return m_size;
+}
+
+template <class Type>
+CVector<Type>::CVector(size_t s) {
+    if (m_size == 0) {
+        std::cout << "Container is empty." << std::endl;
+    } else {
+        m_array = new Type[s];
+        m_allocated = m_size = s;
+    }
+    std::cout << "Contructor with size: " << m_size << std::endl;
 }
 
 template <class Type>
 CVector<Type>::~CVector() {
-    std::cout << "Destructor" << std::endl;
+    std::cout << "Destructor\nClear: " << m_allocated << std::endl;
+    delete [] m_array;
 }
 
 }

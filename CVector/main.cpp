@@ -1,6 +1,9 @@
 #include "Vector.h"
 
 int main(int argc, char** argv) {
-    dstd::CVector<int> k;
+    my::CVector<int> k;
+    my::CVector<int>::size_type size = 10;
+
+    std::cout << size << std::endl;
     return 0;
 }
