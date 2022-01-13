@@ -7,10 +7,36 @@ template <typename Type>
 class Stack {
 private:
     struct Node {
-        Stack<Type>::Node* next;
-        Stack<Type>::Node* prev;
+        Node* next;
+        Node* prev;
         Type value;
-        Node() : next(nullptr), prev(nullptr) {}
+        Node(const Type& t) : next(nullptr), prev(nullptr), value(t) {}
+    };
+
+    struct Iterator {
+        Stack<Type>::Node* _it;
+        Iterator(Node* it) : _it(it) {}
+
+        Iterator operator--() {
+            _it = _it->prev;
+            return *this;
+        }
+
+        Iterator operator++() {
+            _it = _it->next;
+            return *this;
+        }
+
+        bool operator!=(const Iterator& it) {
+            return _it != it._it;
+        }
+
+        Type& operator*() {
+            if (_it == nullptr) {
+                throw std::out_of_range("Out of range");
+            }
+            return _it->value;
+        }
     };
 private:
     Stack<Type>::Node* _first;
@@ -19,9 +45,31 @@ private:
 public:
     Stack() : _first(nullptr), _last(nullptr) {}
 
+    Stack(const Stack& s) = delete;
+    Stack& operator=(const Stack& s) = delete;
+
+    Stack(Stack&& s) :
+        _first(s._first),
+        _last(s._last),
+        _size(s._size) {
+        s._first = nullptr;
+        s._last = nullptr;
+        s._size = 0;
+    }
+
+    void operator =(Stack&& s) {
+        clear();
+        _first = s._first;
+        _last = s._last;
+        _size = s._size;
+        s._first = nullptr;
+        s._last = nullptr;
+        s._size = 0;
+    }
+
     ~Stack() {
         while (_first != nullptr) {
-            Node* tmp = _first;
+            auto tmp = _first;
             _first = _first->next;
             delete tmp;
         }
@@ -30,28 +78,32 @@ public:
     Type top() { return _last->value; }
 
     void pop() {
-        Stack<Type>::Node* tmp = _last;
+        if (_first == nullptr) {
+            throw std::out_of_range("Out of range");
+        }
+
+        Node* tmp = _last;
         _last = _last->prev;
         _last->next = nullptr;
-        delete tmp;
         --_size;
+        delete tmp;
     }
 
-    void push(const Type& value) {
-        std::cout << "1" << std::endl;
-        Stack<Type>::Node* tmp = new Stack<Type>::Node;
-        std::cout << "2" << std::endl;
-        _first->prev = tmp;
-        std::cout << "3" << std::endl;
-        tmp->next = _first;
-        std::cout << "4" << std::endl;
+    void push(const Type& value) noexcept {
+        auto tmp = new Node(value);
+
+        if (_first != nullptr) {
+            _first->prev = tmp;
+            tmp->next = _first;
+        }
+
         _first = tmp;
         ++_size;
     }
 
     void clear() {
         while (_first != nullptr) {
-            Stack<Type>::Node* tmp = _first;
+            auto tmp = _first;
             _first = _first->next;
             delete tmp;
         }
@@ -69,6 +121,9 @@ public:
             return false;
         }
     }
+
+    Iterator begin() { return Iterator(_first);}
+    Iterator end() { return Iterator(nullptr);}
 };
 
 #endif /* __STACK_H__ */
